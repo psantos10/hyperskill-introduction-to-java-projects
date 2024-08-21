@@ -11,16 +11,63 @@ public class Main {
 
 class Game {
     private char[][] grid = new char[3][3];
+    private Scanner scanner = new Scanner(System.in);
 
     public void start() {
-        Scanner scanner = new Scanner(System.in);
-
-        String gameState = scanner.nextLine();
-        setGrid(gameState);
+        String initialGameState = scanner.nextLine();
+        setGrid(initialGameState);
         displayGrid();
-        analyzeGameState();
+
+        makeMove('X');
+
+        displayGrid();
+        // analyzeGameState();
 
         scanner.close();
+    }
+
+    private int[] getCoordinates() {
+        int xPos = 0;
+        int yPos = 0;
+
+        while (true) {
+            if (scanner.hasNextInt()) {
+                xPos = scanner.nextInt();
+                if (scanner.hasNextInt()) {
+                    yPos = scanner.nextInt();
+                    break;
+                } else {
+                    System.out.println("You should enter numbers!");
+                    scanner.nextLine();
+                }
+            } else {
+                System.out.println("You should enter numbers!");
+                scanner.nextLine();
+            }
+        }
+
+        return new int[] { xPos, yPos };
+    }
+
+    private void makeMove(char player) {
+        while (true) {
+            var coordinates = getCoordinates();
+            int xPos = coordinates[0];
+            int yPos = coordinates[1];
+
+            if (xPos < 1 || xPos > 3 || yPos < 1 || yPos > 3) {
+                System.out.println("Coordinates should be from 1 to 3!");
+                continue;
+            }
+
+            if (grid[xPos - 1][yPos - 1] != '_') {
+                System.out.println("This cell is occupied! Choose another one!");
+                continue;
+            }
+
+            grid[xPos - 1][yPos - 1] = player;
+            break;
+        }
     }
 
     private void displayGrid() {
