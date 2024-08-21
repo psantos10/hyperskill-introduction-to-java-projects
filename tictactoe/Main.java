@@ -1,5 +1,7 @@
 package tictactoe;
 
+import java.util.Scanner;
+
 public class Main {
     public static void main(String[] args) {
         Game game = new Game();
@@ -9,8 +11,23 @@ public class Main {
 
 class Game {
     public void start() {
-        System.out.println("X O X");
-        System.out.println("O X O");
-        System.out.println("X X O");
+        Scanner scanner = new Scanner(System.in);
+
+        String gameState = scanner.nextLine();
+        displayGrid(gameState);
+
+        scanner.close();
+    }
+
+    void displayGrid(String gameState) {
+        String firstLine = String.join(" ", gameState.substring(0, 3).split(""));
+        String secondLine = String.join(" ", gameState.substring(3, 6).split(""));
+        String thirdLine = String.join(" ", gameState.substring(6).split(""));
+
+        System.out.println("---------");
+        System.out.printf("| %s |\n", firstLine);
+        System.out.printf("| %s |\n", secondLine);
+        System.out.printf("| %s |\n", thirdLine);
+        System.out.println("---------");
     }
 }
