@@ -10,13 +10,29 @@ public class CoffeeMachine {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
+        System.out.println("Write how many ml of water the coffee machine has:");
+        int availableWater = scanner.nextInt();
+
+        System.out.println("Write how many ml of milk the coffee machine has:");
+        int availableMilk = scanner.nextInt();
+
+        System.out.println("Write how many grams of coffee beans the coffee machine has:");
+        int availableCoffeeBeans = scanner.nextInt();
+
         System.out.println("Write how many cups of coffee you will need:");
         int numberOfCups = scanner.nextInt();
 
-        System.out.printf("For %d cups of coffee you will need:\n", numberOfCups);
-        System.out.printf("%d ml of water\n", numberOfCups * WATER_PER_CUP);
-        System.out.printf("%d ml of milk\n", numberOfCups * MILK_PER_CUP);
-        System.out.printf("%d g of coffee beans\n", numberOfCups * COFFEE_BEANS_PER_CUP);
+        int maxCups = Math.min(availableWater / WATER_PER_CUP,
+                Math.min(availableMilk / MILK_PER_CUP, availableCoffeeBeans / COFFEE_BEANS_PER_CUP));
+
+        if (numberOfCups > maxCups) {
+            System.out.printf("No, I can make only %d cup(s) of coffee\n", maxCups);
+        } else if (numberOfCups == maxCups) {
+            System.out.println("Yes, I can make that amount of coffee");
+        } else {
+            int extraCups = maxCups - numberOfCups;
+            System.out.printf("Yes, I can make that amount of coffee (and even %d more than that)\n", extraCups);
+        }
 
         scanner.close();
     }
