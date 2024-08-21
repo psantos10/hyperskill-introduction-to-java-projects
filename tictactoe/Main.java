@@ -20,14 +20,14 @@ class Game {
     }
 
     void displayGrid(String gameState) {
-        String firstLine = String.join(" ", gameState.substring(0, 3).split(""));
-        String secondLine = String.join(" ", gameState.substring(3, 6).split(""));
-        String thirdLine = String.join(" ", gameState.substring(6).split(""));
+        var firstLine = gameState.substring(0, 3).toCharArray();
+        var secondLine = gameState.substring(3, 6).toCharArray();
+        var thirdLine = gameState.substring(6).toCharArray();
 
         System.out.println("---------");
-        System.out.printf("| %s |\n", firstLine);
-        System.out.printf("| %s |\n", secondLine);
-        System.out.printf("| %s |\n", thirdLine);
+        System.out.printf("| %c %c %c |\n", firstLine[0], firstLine[1], firstLine[2]);
+        System.out.printf("| %c %c %c |\n", secondLine[0], secondLine[1], secondLine[2]);
+        System.out.printf("| %c %c %c |\n", thirdLine[0], thirdLine[1], thirdLine[2]);
         System.out.println("---------");
     }
 }
