@@ -14,14 +14,29 @@ class Game {
     private Scanner scanner = new Scanner(System.in);
 
     public void start() {
-        String initialGameState = scanner.nextLine();
+        String initialGameState = "_________";
         setGrid(initialGameState);
         displayGrid();
 
-        makeMove('X');
+        boolean onGoingGame = true;
+        char currentPlayer = 'X';
 
-        displayGrid();
-        // analyzeGameState();
+        while (onGoingGame) {
+            makeMove(currentPlayer);
+            displayGrid();
+
+            char winner = gameResult();
+            if (winner == 'X' || winner == 'O') {
+                System.out.println(winner + " wins");
+                onGoingGame = false;
+            } else if (winner == 'D') {
+                System.out.println("Draw");
+                onGoingGame = false;
+            } else {
+                // Game is on going
+                currentPlayer = currentPlayer == 'X' ? 'O' : 'X';
+            }
+        }
 
         scanner.close();
     }
@@ -106,20 +121,25 @@ class Game {
         return false;
     }
 
-    private void analyzeGameState() {
+    private char gameResult() {
         boolean xWins = checkWinner('X');
         boolean oWins = checkWinner('O');
 
         if (xWins && oWins || Math.abs(countChar('X') - countChar('O')) > 1) {
-            System.out.println("Impossible");
+            // System.out.println("Impossible");
+            throw new IllegalStateException("Impossible");
         } else if (xWins) {
-            System.out.println("X wins");
+            // System.out.println("X wins");
+            return 'X';
         } else if (oWins) {
-            System.out.println("O wins");
+            // System.out.println("O wins");
+            return 'O';
         } else if (countChar('_') == 0) {
-            System.out.println("Draw");
+            // System.out.println("Draw");
+            return 'D';
         } else {
-            System.out.println("Game not finished");
+            // System.out.println("Game not finished");
+            return 'G';
         }
     }
 
