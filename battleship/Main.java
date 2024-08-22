@@ -19,6 +19,31 @@ public class Main {
             placeShip(SHIP_NAMES[i], SHIP_LENGTHS[i]);
             printBoard();
         }
+
+        System.out.println("The game starts!");
+        System.out.println("Take a shot!");
+
+        while (true) {
+            String input = scanner.nextLine();
+            int[] target = getCoordinates(input);
+
+            if (!isValidCoordinate(target)) {
+                System.out.println("Error! You entered the wrong coordinates! Try again:");
+                continue;
+            }
+
+            if (board[target[0]][target[1]] == 'O') {
+                board[target[0]][target[1]] = 'X';
+                printBoard();
+                System.out.println("You hit a ship!");
+                break;
+            } else {
+                board[target[0]][target[1]] = 'M';
+                printBoard();
+                System.out.println("You missed!");
+                break;
+            }
+        }
     }
 
     private static void initializeBoard() {
