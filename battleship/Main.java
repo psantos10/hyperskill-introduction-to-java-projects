@@ -7,40 +7,18 @@ public class Main {
     private static final int SIZE = 10;
     private static final char[][] board = new char[SIZE][SIZE];
 
+    private static final int[] SHIP_LENGTHS = { 5, 4, 3, 3, 2 };
+    private static final String[] SHIP_NAMES = { "Aircraft Carrier", "Battleship", "Submarine", "Cruiser",
+            "Destroyer" };
+
     public static void main(String[] args) {
         initializeBoard();
         printBoard();
 
-        System.out.println("Enter the coordinates of the ship:");
-        String input = scanner.nextLine();
-        String[] coordinates = input.split(" ");
-
-        if (coordinates.length != 2) {
-            System.out.println("Error!");
-            return;
+        for (int i = 0; i < SHIP_NAMES.length; i++) {
+            placeShip(SHIP_NAMES[i], SHIP_LENGTHS[i]);
+            printBoard();
         }
-
-        String coord1 = coordinates[0];
-        String coord2 = coordinates[1];
-
-        int[] start = getCoordinates(coord1);
-        int[] end = getCoordinates(coord2);
-
-        if (!isValidCoordinate(start) || !isValidCoordinate(end)) {
-            System.out.println("Error!");
-            return;
-        }
-
-        if (!isValidShipPlacement(start, end)) {
-            System.out.println("Error!");
-            return;
-        }
-
-        int shipLength = getShipLength(start, end);
-        String shipParts = getShipParts(start, end);
-
-        System.out.println("Length: " + shipLength);
-        System.out.println("Parts: " + shipParts);
     }
 
     private static void initializeBoard() {
@@ -63,6 +41,48 @@ public class Main {
                 System.out.print(board[i][j] + " ");
             }
             System.out.println();
+        }
+    }
+
+    private static void placeShip(String shipName, int shipSize) {
+        boolean placed = false;
+        while (!placed) {
+            System.out.println("Enter the coordinates of the " + shipName + " (" + shipSize + " cells):");
+            String input = scanner.nextLine();
+            String[] coordinates = input.split(" ");
+
+            if (coordinates.length != 2) {
+                System.out.println("Error! Wrong input format! Try again:");
+                continue;
+            }
+
+            int[] start = getCoordinates(coordinates[0]);
+            int[] end = getCoordinates(coordinates[1]);
+
+            if (!isValidCoordinate(start) || !isValidCoordinate(end)) {
+                System.out.println("Error! Coordinates out of bounds! Try again:");
+                continue;
+            }
+
+            if (!isValidShipPlacement(start, end)) {
+                System.out.println("Error! Wrong ship location! Try again:");
+                continue;
+            }
+
+            int shipLength = getShipLength(start, end);
+
+            if (shipLength != shipSize) {
+                System.out.println("Error! Wrong length of the " + shipName + "! Try again:");
+                continue;
+            }
+
+            if (!isAreaClear(start, end)) {
+                System.out.println("Error! You placed it too close to another one. Try again:");
+                continue;
+            }
+
+            placeShipOnBoard(start, end);
+            placed = true;
         }
     }
 
@@ -90,23 +110,37 @@ public class Main {
         }
     }
 
-    private static String getShipParts(int[] start, int[] end) {
-        StringBuilder parts = new StringBuilder();
+    private static boolean isAreaClear(int[] start, int[] end) {
+        int startRow = Math.min(start[0], end[0]);
+        int endRow = Math.max(start[0], end[0]);
+        int startCol = Math.min(start[1], end[1]);
+        int endCol = Math.max(start[1], end[1]);
+
+        for (int i = startRow - 1; i <= endRow + 1; i++) {
+            for (int j = startCol - 1; j <= endCol + 1; j++) {
+                if (i >= 0 && i < SIZE && j >= 0 && j < SIZE && board[i][j] == 'O') {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private static void placeShipOnBoard(int[] start, int[] end) {
         if (start[0] == end[0]) {
             int row = start[0];
             int startCol = Math.min(start[1], end[1]);
             int endCol = Math.max(start[1], end[1]);
             for (int col = startCol; col <= endCol; col++) {
-                parts.append((char) ('A' + row)).append(col + 1).append(" ");
+                board[row][col] = 'O';
             }
         } else {
             int col = start[1];
             int startRow = Math.min(start[0], end[0]);
             int endRow = Math.max(start[0], end[0]);
             for (int row = startRow; row <= endRow; row++) {
-                parts.append((char) ('A' + row)).append(col + 1).append(" ");
+                board[row][col] = 'O';
             }
         }
-        return parts.toString().trim();
     }
 }
