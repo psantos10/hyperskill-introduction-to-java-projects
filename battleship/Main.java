@@ -1,91 +1,153 @@
 package battleship;
 
+import java.util.Arrays;
 import java.util.Scanner;
 
 public class Main {
+    public static void main(String[] args) {
+        Game game = new Game();
+        game.start();
+    }
+}
+
+class Game {
     private static final Scanner scanner = new Scanner(System.in);
     private static final int SIZE = 10;
-    private static final char[][] board = new char[SIZE][SIZE];
+    private static final char EMPTY_CELL = '~';
+    private static final char SHIP_CELL = 'O';
+    private static final char HIT_CELL = 'X';
+    private static final char MISS_CELL = 'M';
+    private static final int[] SHIP_SIZES = { 5, 4, 3, 3, 2 };
+    private static final String[] SHIP_NAMES = {
+            "Aircraft Carrier",
+            "Battleship",
+            "Submarine",
+            "Cruiser",
+            "Destroyer"
+    };
 
-    private static final int[] SHIP_LENGTHS = { 5, 4, 3, 3, 2 };
-    private static final String[] SHIP_NAMES = { "Aircraft Carrier", "Battleship", "Submarine", "Cruiser",
-            "Destroyer" };
+    private char[][] board;
 
-    public static void main(String[] args) {
+    public Game() {
+        this.board = new char[SIZE][SIZE];
         initializeBoard();
-        printBoard();
+    }
 
-        for (int i = 0; i < SHIP_NAMES.length; i++) {
-            placeShip(SHIP_NAMES[i], SHIP_LENGTHS[i]);
-            printBoard();
-        }
+    public void start() {
+        printBoard(true);
+        placeShips();
+        startTheGame();
 
+        // Close the scanner
+        scanner.close();
+    }
+
+    private void startTheGame() {
         System.out.println("The game starts!");
+        System.err.println();
+
+        printBoard(false);
+
         System.out.println("Take a shot!");
+        System.err.println();
 
-        while (true) {
-            String input = scanner.nextLine();
-            int[] target = getCoordinates(input);
+        boolean isValidAttack = false;
+        while (!isValidAttack) {
+            String attack = scanner.nextLine();
+            int[] coordinates = parseCoordinates(attack);
 
-            if (!isValidCoordinate(target)) {
+            if (coordinates[0] < 0 || coordinates[0] >= SIZE || coordinates[1] < 0 || coordinates[1] >= SIZE) {
                 System.out.println("Error! You entered the wrong coordinates! Try again:");
                 continue;
             }
 
-            if (board[target[0]][target[1]] == 'O') {
-                board[target[0]][target[1]] = 'X';
-                printBoard();
+            if (board[coordinates[0]][coordinates[1]] == SHIP_CELL) {
+                board[coordinates[0]][coordinates[1]] = HIT_CELL;
+
+                printBoard(false);
                 System.out.println("You hit a ship!");
-                break;
-            } else {
-                board[target[0]][target[1]] = 'M';
-                printBoard();
+                isValidAttack = true;
+            } else if (board[coordinates[0]][coordinates[1]] == EMPTY_CELL) {
+                board[coordinates[0]][coordinates[1]] = MISS_CELL;
+
+                printBoard(false);
                 System.out.println("You missed!");
-                break;
+                isValidAttack = true;
+            } else {
+                System.out.println("You've already shot there! Try again:");
+                continue;
             }
+
+            printBoard(true);
         }
     }
 
-    private static void initializeBoard() {
-        for (int i = 0; i < SIZE; i++) {
-            for (int j = 0; j < SIZE; j++) {
-                board[i][j] = '~';
-            }
+    private void initializeBoard() {
+        for (char[] row : board) {
+            Arrays.fill(row, EMPTY_CELL);
         }
     }
 
-    private static void printBoard() {
+    /**
+     * Print the board
+     *
+     * @param showShips - if true, show ships on the board
+     */
+    private void printBoard(boolean showShips) {
         System.out.print("  ");
         for (int i = 1; i <= SIZE; i++) {
             System.out.print(i + " ");
         }
         System.out.println();
+
         for (int i = 0; i < SIZE; i++) {
             System.out.print((char) ('A' + i) + " ");
             for (int j = 0; j < SIZE; j++) {
-                System.out.print(board[i][j] + " ");
+                if (showShips) {
+                    System.out.print(board[i][j] + " ");
+                } else {
+                    System.out.print(board[i][j] == SHIP_CELL ? EMPTY_CELL + " " : board[i][j] + " ");
+                }
             }
             System.out.println();
         }
+
+        System.out.println();
     }
 
-    private static void placeShip(String shipName, int shipSize) {
-        boolean placed = false;
-        while (!placed) {
-            System.out.println("Enter the coordinates of the " + shipName + " (" + shipSize + " cells):");
-            String input = scanner.nextLine();
-            String[] coordinates = input.split(" ");
+    private void placeShips() {
+        for (int i = 0; i < SHIP_NAMES.length; i++) {
+            System.out.println("Enter the coordinates of the " + SHIP_NAMES[i] + " (" + SHIP_SIZES[i] + " cells):");
+            System.out.println();
+
+            placeShip(SHIP_NAMES[i], SHIP_SIZES[i]);
+            printBoard(true);
+        }
+    }
+
+    /**
+     * Place a ship on the board
+     *
+     * @param shipName - name of the ship to place
+     * @param shipSize - size of the ship to place
+     */
+    private void placeShip(String shipName, int shipSize) {
+        boolean isShipPlaced = false;
+
+        while (!isShipPlaced) {
+            String[] coordinates = scanner.nextLine().split(" ");
 
             if (coordinates.length != 2) {
-                System.out.println("Error! Wrong input format! Try again:");
+                System.out.println("Error! You entered wrong coordinates! Try again:");
                 continue;
             }
 
-            int[] start = getCoordinates(coordinates[0]);
-            int[] end = getCoordinates(coordinates[1]);
+            int[] start = parseCoordinates(coordinates[0]);
+            int[] end = parseCoordinates(coordinates[1]);
+            int shipLength = getShipLength(start, end);
 
-            if (!isValidCoordinate(start) || !isValidCoordinate(end)) {
-                System.out.println("Error! Coordinates out of bounds! Try again:");
+            if (shipLength != shipSize) {
+                System.out.printf("Error! Wrong length of the %s! Try again:\n", shipName);
                 continue;
             }
 
@@ -94,40 +156,32 @@ public class Main {
                 continue;
             }
 
-            int shipLength = getShipLength(start, end);
-
-            if (shipLength != shipSize) {
-                System.out.println("Error! Wrong length of the " + shipName + "! Try again:");
-                continue;
-            }
-
             if (!isAreaClear(start, end)) {
                 System.out.println("Error! You placed it too close to another one. Try again:");
                 continue;
             }
 
-            placeShipOnBoard(start, end);
-            placed = true;
+            placeShipOnTheBoard(start, end);
+            isShipPlaced = true;
         }
+
+        System.out.println();
     }
 
-    private static int[] getCoordinates(String input) {
-        int row = input.charAt(0) - 'A';
-        int col = Integer.parseInt(input.substring(1)) - 1;
+    /**
+     * Parse the coordinates
+     *
+     * @param coordinate - coordinate to parse
+     * @return - parsed coordinates
+     */
+    private int[] parseCoordinates(String coordinateString) {
+        int row = coordinateString.charAt(0) - 'A';
+        int col = Integer.parseInt(coordinateString.substring(1)) - 1;
+
         return new int[] { row, col };
     }
 
-    private static boolean isValidCoordinate(int[] coordinate) {
-        int row = coordinate[0];
-        int col = coordinate[1];
-        return row >= 0 && row < SIZE && col >= 0 && col < SIZE;
-    }
-
-    private static boolean isValidShipPlacement(int[] start, int[] end) {
-        return start[0] == end[0] || start[1] == end[1];
-    }
-
-    private static int getShipLength(int[] start, int[] end) {
+    private int getShipLength(int[] start, int[] end) {
         if (start[0] == end[0]) {
             return Math.abs(start[1] - end[1]) + 1;
         } else {
@@ -135,7 +189,11 @@ public class Main {
         }
     }
 
-    private static boolean isAreaClear(int[] start, int[] end) {
+    private boolean isValidShipPlacement(int[] start, int[] end) {
+        return start[0] == end[0] || start[1] == end[1];
+    }
+
+    private boolean isAreaClear(int[] start, int[] end) {
         int startRow = Math.min(start[0], end[0]);
         int endRow = Math.max(start[0], end[0]);
         int startCol = Math.min(start[1], end[1]);
@@ -151,20 +209,15 @@ public class Main {
         return true;
     }
 
-    private static void placeShipOnBoard(int[] start, int[] end) {
-        if (start[0] == end[0]) {
-            int row = start[0];
-            int startCol = Math.min(start[1], end[1]);
-            int endCol = Math.max(start[1], end[1]);
-            for (int col = startCol; col <= endCol; col++) {
-                board[row][col] = 'O';
-            }
-        } else {
-            int col = start[1];
-            int startRow = Math.min(start[0], end[0]);
-            int endRow = Math.max(start[0], end[0]);
-            for (int row = startRow; row <= endRow; row++) {
-                board[row][col] = 'O';
+    private void placeShipOnTheBoard(int[] start, int[] end) {
+        int startRow = Math.min(start[0], end[0]);
+        int endRow = Math.max(start[0], end[0]);
+        int startCol = Math.min(start[1], end[1]);
+        int endCol = Math.max(start[1], end[1]);
+
+        for (int i = startRow; i <= endRow; i++) {
+            for (int j = startCol; j <= endCol; j++) {
+                board[i][j] = SHIP_CELL;
             }
         }
     }
