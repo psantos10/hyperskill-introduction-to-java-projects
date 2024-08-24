@@ -18,8 +18,8 @@ public class Game {
     public Game() {
         this.board = new char[SIZE][SIZE];
         this.ships = new Ship[SHIPS_COUNT];
-        initializeBoard();
         initializeShips();
+        initializeBoard();
     }
 
     public void start() {
@@ -56,13 +56,14 @@ public class Game {
     }
 
     private boolean isGameOver() {
-        return false;
-        // for (Ship ship : ships) {
-        // if (!ship.isSunk()) {
-        // return false;
-        // }
-        // }
-        // return true;
+        for (Ship ship : ships) {
+            if (!ship.isSunk()) {
+                return false;
+            }
+        }
+
+        printMessage("You sank the last ship. You won. Congratulations!", false);
+        return true;
     }
 
     private void attack() {
@@ -82,7 +83,16 @@ public class Game {
                 board[coordinates[0]][coordinates[1]] = HIT_CELL;
 
                 printBoard(false);
-                printMessage("You hit a ship! Try again:", false);
+
+                var hittedShip = Ship.getShipAtPosition(ships, coordinates);
+                hittedShip.hit();
+
+                if (hittedShip.isSunk()) {
+                    printMessage("You sank a ship! Specify a new target:", false);
+                } else {
+                    printMessage("You hit a ship! Try again:", false);
+                }
+
                 isValidAttack = true;
             } else if (board[coordinates[0]][coordinates[1]] == EMPTY_CELL) {
                 board[coordinates[0]][coordinates[1]] = MISS_CELL;
@@ -91,7 +101,11 @@ public class Game {
                 printMessage("You missed! Try again:", false);
                 isValidAttack = true;
             } else {
-                printMessage("You've already shot there! Try again:", false);
+                board[coordinates[0]][coordinates[1]] = HIT_CELL;
+
+                printBoard(false);
+
+                printMessage("You hit a ship! Try again:", false);
                 continue;
             }
         }
@@ -174,7 +188,8 @@ public class Game {
                 continue;
             }
 
-            placeShipOnTheBoard(start, end);
+            placeShipOnTheBoard(shipName, start, end);
+
             isShipPlaced = true;
         }
 
@@ -234,16 +249,30 @@ public class Game {
         return true;
     }
 
-    private void placeShipOnTheBoard(int[] start, int[] end) {
+    private void placeShipOnTheBoard(String shipName, int[] start, int[] end) {
         int startRow = Math.min(start[0], end[0]);
         int endRow = Math.max(start[0], end[0]);
         int startCol = Math.min(start[1], end[1]);
         int endCol = Math.max(start[1], end[1]);
+        Ship ship = findShipByName(shipName);
 
         for (int i = startRow; i <= endRow; i++) {
             for (int j = startCol; j <= endCol; j++) {
                 board[i][j] = SHIP_CELL;
+
+                // Set the ship's position
+                ship.addCellPosition(i, j);
             }
         }
+    }
+
+    private Ship findShipByName(String name) {
+        for (Ship ship : ships) {
+            if (ship.getName().equals(name)) {
+                return ship;
+            }
+        }
+
+        return null;
     }
 }
